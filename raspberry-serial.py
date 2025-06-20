@@ -17,47 +17,24 @@ from serial.tools import list_ports
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 
 # --- CONFIGURAZIONE SERIAL ---
+# Imposta manualmente la porta seriale se vuoi bypassare la ricerca automatica:
+SERIAL_PORT = '/dev/ttyACM0'  # <--- Modifica qui con la porta corretta
+
+# Se SERIAL_PORT è None lo script cercherà automaticamente Arduino via USB
+# SERIAL_PORT = None
 BAUDRATE = 9600
 TIMEOUT = 2  # secondi
 
+
 # --- CONFIGURAZIONE INFLUXDB ---
 INFLUX_URL = "http://localhost:8086"
-INFLUX_TOKEN = "<IL_TUO_TOKEN>"
-INFLUX_ORG = "<LA_TUA_ORG>"
-INFLUX_BUCKET = "<IL_TUO_BUCKET>"
-
-
-def find_arduino_port():
-    """Prova a trovare automaticamente la porta seriale di Arduino."""
-    ports = list_ports.comports()
-    for port in ports:
-        if 'Arduino' in port.description or 'ttyUSB' in port.device:
-            return port.device
-    return None
-
-
-def parse_line(line):
-    """Estrae temperatura, umidità aria e umidità suolo da una linea di seriale."""
-    t = h = moisture = None
-    try:
-        # Esempio linea: "TEMPERATURE:25, HUMIDITY:60"
-        # e poi: "MOISTURELEVEL:512"
-        if 'TEMPERATURE:' in line and 'HUMIDITY:' in line:
-            m = re.search(r"TEMPERATURE:(?P<temp>\d+), HUMIDITY:(?P<hum>\d+)", line)
-            if m:
-                t = int(m.group('temp'))
-                h = int(m.group('hum'))
-        elif 'MOISTURELEVEL:' in line:
-            m2 = re.search(r"MOISTURELEVEL:(?P<moist>\d+\.?\d*)", line)
-            if m2:
-                moisture = float(m2.group('moist'))
-    except Exception as e:
-        print(f"Errore parsing linea: {e}")
-    return t, h, moisture
+INFLUX_TOKEN = ""
+INFLUX_ORG = ""
+INFLUX_BUCKET = ""
 
 
 def main():
-    port = find_arduino_port()
+    port = SERIAL_PORT
     if port is None:
         print("Porta Arduino non trovata. Verifica il collegamento USB.")
         return
@@ -68,35 +45,23 @@ def main():
     # Inizializza client InfluxDB
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
     write_api = client.write_api(write_options=WriteOptions(batch_size=1))
+    time.sleep(3)
+    line = ser.readline().decode()
+    while True:
+         line = ser.readline().decode()
+         if "TEMPERATURA" in line and "HUMIDITY" and "MOISTURELEVEL":
+            line = line.split(" ") 
+            temp = int(line[0].split(":")[1])
+            moisture = float(line[2].split(":")[1])
+            hum = int(line[1].split(":")[1])
+#            print(temp, hum, moisture)
 
-    try:
-        while True:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if not line:
-                continue
+             # crea punto InfluxDB
+            timestamp = time.time_ns()
+            point = Point("sensori_arua").tag("device", "arduino1").field("temperature", temp).field("humidity", hum).field("moisture", moisture).time(timestamp)
 
-            temp, hum, moisture = parse_line(line)
-            # Quando abbiamo tutti e tre i valori, inviamo a InfluxDB
-            if temp is not None and hum is not None:
-                # attendiamo il moisture successivo
-                continue
-            if moisture is not None:
-                timestamp = time.time_ns()
-                # crea punto InfluxDB
-                point = Point("sensori_arua").tag("device", "arduino1") \
-                    .field("temperature", temp) \
-                    .field("humidity", hum) \
-                    .field("moisture", moisture) \
-                    .time(timestamp)
-
-                write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
-                print(f"Inviati: T={temp}°C H={hum}% M={moisture}")
-
-    except KeyboardInterrupt:
-        print("Interrotto da utente.")
-    finally:
-        ser.close()
-        client.close()
+            write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
+            print(f"Inviati: T={temp}°C H={hum}% M={moisture}")
 
 
 if __name__ == "__main__":
