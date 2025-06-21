@@ -49,16 +49,17 @@ def main():
     line = ser.readline().decode()
     while True:
          line = ser.readline().decode()
-         if "TEMPERATURA" in line and "HUMIDITY" and "MOISTURELEVEL":
+         if "TEMPERATURA" in line and "UMID_ARIA" and "UMID_SUOLO":
             line = line.split(" ") 
             temp = int(line[0].split(":")[1])
-            moisture = float(line[2].split(":")[1])
             hum = int(line[1].split(":")[1])
-#            print(temp, hum, moisture)
+            moisture = float(line[2].split(":")[1])
+            liv_acqua = float(line[3].split(":")[1])
+#            print(temp, hum, moisture, liv_acqua)
 
              # crea punto InfluxDB
             timestamp = time.time_ns()
-            point = Point("sensori_arua").tag("device", "arduino1").field("temperature", temp).field("humidity", hum).field("moisture", moisture).time(timestamp)
+            point = Point("sensori_arua").tag("device", "arduino1").field("temperature", temp).field("humidity", hum).field("moisture", moisture).field("livello acqua", liv_acqua).time(timestamp)
 
             write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
             print(f"Inviati: T={temp}°C H={hum}% M={moisture}")
