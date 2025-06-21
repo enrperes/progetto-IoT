@@ -29,8 +29,8 @@ TIMEOUT = 2  # secondi
 # --- CONFIGURAZIONE INFLUXDB ---
 INFLUX_URL = "http://localhost:8086"
 INFLUX_TOKEN = ""
-INFLUX_ORG = ""
-INFLUX_BUCKET = ""
+INFLUX_ORG = "IoT"
+INFLUX_BUCKET = "bucket_sensori"
 
 
 def main():
@@ -59,7 +59,7 @@ def main():
 
              # crea punto InfluxDB
             timestamp = time.time_ns()
-            point = Point("sensori_arua").tag("device", "arduino1").field("temperature", temp).field("humidity", hum).field("moisture", moisture).field("livello acqua", liv_acqua).time(timestamp)
+            point = Point("sensori_pianta").tag("device", "arduino").field("Temperatura", temp).field("Umidita' Aria", hum).field("Umidita' Terreno", moisture).field("Livello Acqua", liv_acqua).time(timestamp)
 
             write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
             print(f"Inviati: T={temp}°C H={hum}% M={moisture}")
