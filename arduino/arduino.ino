@@ -40,11 +40,13 @@ void loop(){
     Serial.print(" LIV_ACQUA:");
     Serial.println(liv_acqua);
 
-    if(umidita_suolo<560){
+    if(umidita_suolo>450){
     digitalWrite(MOTORE, LOW);
+    delay(2000);
+    digitalWrite(MOTORE, HIGH);
     } else{
     digitalWrite(MOTORE, HIGH);
-    delay(5000);
+    delay(2000);
     }
 
     if(liv_acqua<15){
@@ -55,13 +57,14 @@ void loop(){
     }
 
     Serial.println();
-    delay(1000);
+    delay(60 * 5 * 1000); // 5 minuti 
+    // delay(1000);
 }
 
 int readSensor() {
-  digitalWrite(SENSOR_POWER, HIGH);  // Turn the sensor ON
-  delay(10);                        // wait 10 milliseconds
-  val = analogRead(WATER_LVL);      // Read the analog value form sensor
-  digitalWrite(SENSOR_POWER, LOW);   // Turn the sensor OFF
-  return val;                       // send current reading
+  digitalWrite(SENSOR_POWER, HIGH);
+  delay(10);                        
+  val = analogRead(WATER_LVL);      
+  digitalWrite(SENSOR_POWER, LOW);   
+  return val;                       
 }
