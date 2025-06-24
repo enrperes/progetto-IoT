@@ -12,7 +12,6 @@ Configurazione InfluxDB:
 """
 import serial
 import time
-import re
 from serial.tools import list_ports
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 

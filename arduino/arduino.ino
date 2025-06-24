@@ -57,8 +57,7 @@ void loop(){
     }
 
     Serial.println();
-    delay(60 * 5 * 1000); // 5 minuti 
-    // delay(1000);
+    delay(30000); // 30 secondi 
 }
 
 int readSensor() {
