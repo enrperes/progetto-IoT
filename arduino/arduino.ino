@@ -1,5 +1,4 @@
 #include <DHT.h>
-// #include <DHT_U.h>
 
 int MOTORE = 13;
 int UM_SUOLO = A5;
@@ -40,7 +39,7 @@ void loop(){
     Serial.print(" LIV_ACQUA:");
     Serial.println(liv_acqua);
 
-    if(umidita_suolo>450){
+    if(umidita_suolo>450){ // soglia umidità terreno 
     digitalWrite(MOTORE, LOW);
     delay(2000);
     digitalWrite(MOTORE, HIGH);
@@ -61,9 +60,9 @@ void loop(){
 }
 
 int readSensor() {
-  digitalWrite(SENSOR_POWER, HIGH);
+  digitalWrite(SENSOR_POWER, HIGH);  
   delay(10);                        
   val = analogRead(WATER_LVL);      
-  digitalWrite(SENSOR_POWER, LOW);   
+  digitalWrite(SENSOR_POWER, LOW);  
   return val;                       
 }
