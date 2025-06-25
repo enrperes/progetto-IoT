@@ -24,7 +24,7 @@ TIMEOUT = 2  # secondi
 
 # --- CONFIGURAZIONE INFLUXDB ---
 INFLUX_URL = "http://localhost:8086"
-INFLUX_TOKEN = "SlblcYc8-Q68pwJjqwu4FVjT87657x2pfZ-zMYGYeQrlhMGQ_nVW2jaePMVuYszYt3SoSVLlj28VKB1fnVlREw=="
+INFLUX_TOKEN = ""
 INFLUX_ORG = "IoT"
 INFLUX_BUCKET = "bucket_sensori"
 
